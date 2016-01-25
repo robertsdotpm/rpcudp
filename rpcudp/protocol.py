@@ -10,6 +10,15 @@ from twisted.python import log
 
 from rpcudp.exceptions import MalformedMessage
 
+import binascii
+
+def log_packet(datagram, address):
+	datagram = binascii.hexlify(datagram)
+	address = str(address)
+	msg = "\r\n\r\n\r\nMSG receive from %s:\r\n%s" % (address, datagram)
+	with open("packet.log", "ab+") as myfile:
+		myfile.write(msg)
+
 
 class RPCProtocol(protocol.DatagramProtocol):
     noisy = False
@@ -23,6 +32,9 @@ class RPCProtocol(protocol.DatagramProtocol):
         self._outstanding = {}
 
     def datagramReceived(self, datagram, address):
+		# Log packet contents.
+		log_packet(datagram, address)
+		
         if self.noisy:
             log.msg("received datagram from %s" % repr(address))
         if len(datagram) < 22:
